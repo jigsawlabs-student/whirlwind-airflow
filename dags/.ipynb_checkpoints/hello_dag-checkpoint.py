@@ -1,11 +1,20 @@
-from datetime import datetime
+
 from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
+from airflow.decorators import task, dag
+from airflow.utils.dates import days_ago
+from airflow.utils.task_group import TaskGroup
 
-def hello():
-    return 'Hello world!'
+default_args = {'start_date': days_ago(1)}
 
-hello_dag = DAG('hello_world', start_date=datetime.now())
 
-hello_task = PythonOperator(task_id='hello_task', python_callable=hello, dag=hello_dag)
+@task
+def hello_task():
+    print('hello world')
+    return 'hello world'
+
+@dag(schedule_interval='@once', default_args=default_args, catchup=False)
+def hello_world():
+    data = hello_task()
+
+dag = hello_world()
 
